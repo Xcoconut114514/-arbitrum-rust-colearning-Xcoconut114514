@@ -55,6 +55,15 @@ cargo -V
 
 你可以用 Remix 或 Foundry/Hardhat 部署到 Arbitrum Sepolia，然后把部署后的合约地址填到 `.env` 的 `HELLO_CONTRACT`。
 
+### 测试合约（可写）
+
+用于测试“发交易 / 改链上状态”的合约在 [contracts/Counter.sol](contracts/Counter.sol)：
+
+- `number()`：读取当前计数
+- `increment()`：发送交易使 `number += 1`
+
+建议先把 `Counter` 部署到 Arbitrum Sepolia，再把地址填到 `.env` 的 `COUNTER_CONTRACT`。
+
 ### 示例交易（参考）
 
 本任务描述中提到“示例交易哈希和合约地址可在 Arbiscan 查看”。这里不硬编码任何 hash（避免过期/错误）。
@@ -86,7 +95,12 @@ cargo -V
 Copy-Item .env.example .env
 ```
 
-2) 编辑 `.env`：填入 `PRIVATE_KEY`（仅测试网）以及可选的 `HELLO_CONTRACT`。
+2) 编辑 `.env`：
+
+- `RPC_URL`：Arbitrum Sepolia RPC（默认已填）
+- `PRIVATE_KEY`：你的钱包私钥（仅测试网，严禁提交到 Git）
+- 可选：`HELLO_CONTRACT`、`COUNTER_CONTRACT`
+- 可选：`DO_INCREMENT=1` 时会发送 `increment()` 交易
 
 3) 运行：
 
@@ -100,6 +114,21 @@ cargo run
 - `chain_id: 421614`
 - `latest_block: ...`
 - 如果配置了 `HELLO_CONTRACT`，还会输出 `hello_web3(): hello Web3`
+
+如果你配置了 `COUNTER_CONTRACT`，还会输出：
+
+- `counter.number(): ...`
+
+如果还设置了 `DO_INCREMENT=1`，会尝试发送一笔 `increment()` 交易（需要测试 ETH）。
+
+## 你问的：要不要创建“私钥文件”？
+
+推荐做法是不单独创建私钥文件，而是把私钥放在本地 `.env`：
+
+- 本项目根目录已提供 [.env.example](.env.example)
+- 你本地创建的 `.env` 会被 `.gitignore` 忽略，不会提交到仓库
+
+私钥获取路径（MetaMask）：Account details -> Export Private Key。
 
 ## 5. 最终任务：推送到 GitHub
 

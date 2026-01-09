@@ -1,0 +1,15 @@
+[package]
+name = "arbitrum-rust-colearning-xcoconut114514"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Arbitrum Sepolia 链上交互：Alloy（Rust 原生以太坊工具库）
+alloy = { version = "0.7", features = ["full"] }
+
+# 异步运行时
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+# 便捷错误处理与 .env
+eyre = "0.6"
+dotenvy = "0.15"

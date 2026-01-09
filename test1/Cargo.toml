@@ -13,3 +13,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 # 便捷错误处理与 .env
 eyre = "0.6"
 dotenvy = "0.15"
+
+# 余额查询（直接 JSON-RPC，兼容部分节点返回的奇数长度 hex）
+reqwest = { version = "0.12", features = ["json"] }
+serde_json = "1"

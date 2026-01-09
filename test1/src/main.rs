@@ -1,8 +1,16 @@
 use alloy::network::EthereumWallet;
 use alloy::providers::{Provider, ProviderBuilder};
+use alloy::primitives::{Address, U256};
 use alloy::signers::local::PrivateKeySigner;
 use dotenvy::dotenv;
 use eyre::Result;
+
+fn format_wei_as_eth(wei: U256) -> String {
+    let base = U256::from(10u64).pow(U256::from(18u64));
+    let whole = wei / base;
+    let frac = wei % base;
+    format!("{whole}.{:018}", frac)
+}
 
 alloy::sol! {
     #[sol(rpc)]
@@ -30,10 +38,12 @@ async fn main() -> Result<()> {
     let provider = ProviderBuilder::new().on_http(rpc_url.parse()?);
 
     // 可选：如果提供了 PRIVATE_KEY，则构造可签名 Provider，用于发送交易。
+    let mut wallet_address: Option<Address> = None;
     let signing_provider = match std::env::var("PRIVATE_KEY") {
         Ok(private_key) if !private_key.trim().is_empty() => {
             let signer: PrivateKeySigner = private_key.parse()?;
             let address = signer.address();
+            wallet_address = Some(address);
             println!("wallet_address: {address}");
 
             let wallet = EthereumWallet::from(signer);
@@ -50,6 +60,19 @@ async fn main() -> Result<()> {
 
     let latest_block = provider.get_block_number().await?;
     println!("latest_block: {latest_block}");
+
+    // 查询余额：优先使用 BALANCE_ADDRESS，否则（若存在 PRIVATE_KEY）查询当前钱包地址。
+    let balance_address = match std::env::var("BALANCE_ADDRESS") {
+        Ok(v) if !v.trim().is_empty() => Some(v.parse::<Address>()?),
+        _ => wallet_address,
+    };
+
+    if let Some(addr) = balance_address {
+        let balance_wei = provider.get_balance(addr).await?;
+        println!("balance_address: {addr}");
+        println!("balance_wei: {}", balance_wei);
+        println!("balance_eth: {}", format_wei_as_eth(balance_wei));
+    }
 
     if let Ok(contract_addr) = std::env::var("HELLO_CONTRACT") {
         let contract_addr = contract_addr.parse()?;
